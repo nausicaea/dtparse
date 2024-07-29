@@ -156,8 +156,10 @@ pub(crate) fn tokenize(parse_string: &str) -> Vec<String> {
 
 /// Utility function for `ParserInfo` that helps in constructing
 /// the attributes that make up the `ParserInfo` container
-#[must_use] pub fn parse_info(vec: Vec<Vec<&str>>) -> HashMap<String, usize> {
+#[must_use] 
+pub fn parse_info<'a, S: AsRef<[Vec<&'a str>]>>(vec: S) -> HashMap<String, usize> {
     let mut m = HashMap::new();
+    let vec = vec.as_ref();
 
     if vec.len() == 1 {
         for (i, val) in vec.first().unwrap_or_else(|| unreachable!()).iter().enumerate() {
