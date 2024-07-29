@@ -1,6 +1,6 @@
 #![deny(missing_docs)]
 #![warn(clippy::pedantic)]
-#![deny(clippy::unwrap_used)]
+#![cfg_attr(not(test), deny(clippy::unwrap_used))]
 
 //! # dtparse
 //! The fully-featured "even I couldn't understand that" time parser.
