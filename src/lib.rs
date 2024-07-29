@@ -502,7 +502,7 @@ impl YMD {
         ))
     }
 
-    #[allow(clippy::needless_return)]
+    //#[allow(clippy::needless_return)]
     fn resolve_ymd(
         &mut self,
         yearfirst: bool,
@@ -904,7 +904,6 @@ impl Parser {
             && (all_ascii_upper || self.info.utczone.contains_key(token))
     }
 
-    #[allow(clippy::unnecessary_unwrap)]
     fn ampm_valid(&self, hour: Option<i32>, ampm: Option<bool>, fuzzy: bool) -> ParseResult<bool> {
         let mut val_is_ampm = !(fuzzy && ampm.is_some());
 
@@ -1008,7 +1007,6 @@ impl Parser {
         }
     }
 
-    #[allow(clippy::unnecessary_unwrap)]
     fn parse_numeric_token(
         &self,
         tokens: &[String],
@@ -1230,7 +1228,6 @@ impl Parser {
         hms_idx
     }
 
-    #[allow(clippy::unnecessary_unwrap)]
     fn parse_hms(
         &self,
         idx: usize,

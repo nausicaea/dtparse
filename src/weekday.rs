@@ -34,7 +34,7 @@ impl DayOfWeek {
             4 => DayOfWeek::Thursday,
             5 => DayOfWeek::Friday,
             6 => DayOfWeek::Saturday,
-            _ => panic!("Unreachable."),
+            _ => unreachable!(),
         }
     }
 
@@ -74,7 +74,7 @@ pub fn day_of_week(year: u32, month: u32, day: u32) -> ParseResult<DayOfWeek> {
         8 => 1,
         9 | 12 => 4,
         10 => 6,
-        _ => panic!("Unreachable."),
+        _ => unreachable!(),
     };
 
     // This implementation is Gregorian-only.
@@ -83,7 +83,7 @@ pub fn day_of_week(year: u32, month: u32, day: u32) -> ParseResult<DayOfWeek> {
         1 => 5,
         2 => 3,
         3 => 1,
-        _ => panic!("Unreachable."),
+        _ => unreachable!(),
     };
 
     match (day + e + f + g + g / 4) % 7 {
@@ -94,7 +94,7 @@ pub fn day_of_week(year: u32, month: u32, day: u32) -> ParseResult<DayOfWeek> {
         4 => Ok(DayOfWeek::Thursday),
         5 => Ok(DayOfWeek::Friday),
         6 => Ok(DayOfWeek::Saturday),
-        _ => panic!("Unreachable."),
+        _ => unreachable!(),
     }
 }
 
