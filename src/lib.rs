@@ -1,4 +1,5 @@
 #![deny(missing_docs)]
+#![deny(clippy::unwrap_used)]
 #![cfg_attr(test, allow(unknown_lints))]
 #![cfg_attr(test, deny(warnings))]
 
