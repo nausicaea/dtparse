@@ -160,7 +160,7 @@ pub(crate) fn tokenize(parse_string: &str) -> Vec<String> {
     let mut m = HashMap::new();
 
     if vec.len() == 1 {
-        for (i, val) in vec.first().unwrap().iter().enumerate() {
+        for (i, val) in vec.first().unwrap_or_else(|| unreachable!()).iter().enumerate() {
             m.insert(val.to_lowercase(), i);
         }
     } else {
@@ -338,7 +338,7 @@ impl ParserInfo {
             res.tzoffset = Some(0);
         } else if res.tzoffset != Some(0)
             && res.tzname.is_some()
-            && self.utczone_index(res.tzname.as_ref().unwrap())
+            && self.utczone_index(res.tzname.as_ref().unwrap_or_else(|| unreachable!()))
         {
             res.tzoffset = Some(0);
         }
@@ -395,13 +395,13 @@ impl YMD {
             (1..=31).contains(&val)
         } else if self.ystridx.is_none() {
             // UNWRAP: Earlier condition catches mstridx missing
-            let month = self._ymd[self.mstridx.unwrap()];
-            1 <= val && (val <= days_in_month(2000, month).unwrap() as i32)
+            let month = self._ymd[self.mstridx.unwrap_or_else(|| unreachable!())];
+            1 <= val && (val <= days_in_month(2000, month).unwrap_or_else(|_| unreachable!()) as i32)
         } else {
             // UNWRAP: Earlier conditions prevent us from unsafely unwrapping
-            let month = self._ymd[self.mstridx.unwrap()];
-            let year = self._ymd[self.ystridx.unwrap()];
-            1 <= val && (val <= days_in_month(year, month).unwrap() as i32)
+            let month = self._ymd[self.mstridx.unwrap_or_else(|| unreachable!())];
+            let year = self._ymd[self.ystridx.unwrap_or_else(|| unreachable!())];
+            1 <= val && (val <= days_in_month(year, month).unwrap_or_else(|_| unreachable!()) as i32)
         }
     }
 
@@ -696,7 +696,7 @@ impl Parser {
         let default_date = default.unwrap_or(&Local::now().naive_local()).date();
 
         let default_ts =
-            NaiveDateTime::new(default_date, NaiveTime::from_hms_opt(0, 0, 0).unwrap());
+            NaiveDateTime::new(default_date, NaiveTime::from_hms_opt(0, 0, 0).unwrap_or_else(|| unreachable!()));
 
         let (res, tokens) =
             self.parse_with_tokens(timestr, dayfirst, yearfirst, fuzzy, fuzzy_with_tokens)?;
@@ -797,7 +797,7 @@ impl Parser {
             } else if self.could_be_tzname(res.hour, &res.tzname, res.tzoffset, &l[i]) {
                 res.tzname = Some(l[i].clone());
 
-                let tzname = res.tzname.clone().unwrap();
+                let tzname = res.tzname.clone().unwrap_or_else(|| unreachable!());
                 res.tzoffset = self.info.tzoffset_index(&tzname).map(|t| t as i32);
 
                 if i + 1 < len_l && (l[i + 1] == "+" || l[i + 1] == "-") {
@@ -844,7 +844,7 @@ impl Parser {
                 }
 
                 res.tzoffset =
-                    Some(signal * (hour_offset.unwrap() * 3600 + min_offset.unwrap() * 60));
+                    Some(signal * (hour_offset.unwrap_or_else(|| unreachable!()) * 3600 + min_offset.unwrap_or_else(|| unreachable!()) * 60));
 
                 let tzname = res.tzname.clone();
                 if i + 5 < len_l
@@ -914,7 +914,7 @@ impl Parser {
             } else {
                 return Err(ParseError::AmPmWithoutHour);
             }
-        } else if !(0 <= hour.unwrap() && hour.unwrap() <= 12) {
+        } else if !(0 <= hour.unwrap_or_else(|| unreachable!()) && hour.unwrap_or_else(|| unreachable!()) <= 12) {
             if fuzzy {
                 val_is_ampm = false;
             } else {
@@ -937,7 +937,7 @@ impl Parser {
             let dow = day_of_week(y as u32, m, default.day())?;
 
             // UNWRAP: We've already check res.weekday() is some
-            let actual_weekday = (res.weekday.unwrap() + 1) % 7;
+            let actual_weekday = (res.weekday.unwrap_or_else(|| unreachable!()) + 1) % 7;
             let other = DayOfWeek::from_numeral(actual_weekday as u32);
             Duration::days(i64::from(dow.difference(&other)))
         } else {
@@ -996,9 +996,9 @@ impl Parser {
                 || res.tzname.is_none())
         {
             Ok(None)
-        } else if res.tzname.is_some() && tzinfos.contains_key(res.tzname.as_ref().unwrap()) {
+        } else if res.tzname.is_some() && tzinfos.contains_key(res.tzname.as_ref().unwrap_or_else(|| unreachable!())) {
             Ok(FixedOffset::east_opt(
-                *tzinfos.get(res.tzname.as_ref().unwrap()).unwrap(),
+                *tzinfos.get(res.tzname.as_ref().unwrap_or_else(|| unreachable!())).unwrap_or_else(|| unreachable!()),
             ))
         } else if let Some(tzname) = res.tzname.as_ref() {
             println!("tzname {tzname} identified but not understood.");
@@ -1020,7 +1020,7 @@ impl Parser {
     ) -> ParseResult<usize> {
         let mut idx = idx;
         let value_repr = &tokens[idx];
-        let mut value = Decimal::from_str(value_repr).unwrap();
+        let mut value = Decimal::from_str(value_repr).unwrap_or_else(|_| unreachable!());
 
         let len_li = value_repr.len();
         let len_l = tokens.len();
@@ -1082,7 +1082,7 @@ impl Parser {
         } else if idx + 2 < len_l && tokens[idx + 1] == ":" {
             // HH:MM[:SS[.ss]]
             // TODO: Better story around Decimal handling
-            res.hour = Some(value.floor().to_i64().unwrap() as i32);
+            res.hour = Some(value.floor().to_i64().unwrap_or_else(|| unreachable!()) as i32);
             // TODO: Rescope `value` here?
             value = self.to_decimal(&tokens[idx + 2])?;
             let min_sec = self.parse_min_sec(value);
@@ -1091,7 +1091,7 @@ impl Parser {
 
             if idx + 4 < len_l && tokens[idx + 3] == ":" {
                 // TODO: (x, y) = (a, b) syntax?
-                let ms = self.parsems(&tokens[idx + 4]).unwrap();
+                let ms = self.parsems(&tokens[idx + 4]).unwrap_or_else(|_| unreachable!());
                 res.second = Some(ms.0);
                 res.nanosecond = Some(ms.1);
 
@@ -1130,8 +1130,8 @@ impl Parser {
             idx += 1;
         } else if idx + 1 >= len_l || info.jump_index(&tokens[idx + 1]) {
             if idx + 2 < len_l && info.ampm_index(&tokens[idx + 2]).is_some() {
-                let hour = value.to_i64().unwrap() as i32;
-                let ampm = info.ampm_index(&tokens[idx + 2]).unwrap();
+                let hour = value.to_i64().unwrap_or_else(|| unreachable!()) as i32;
+                let ampm = info.ampm_index(&tokens[idx + 2]).unwrap_or_else(|| unreachable!());
                 res.hour = Some(self.adjust_ampm(hour, ampm));
                 idx += 1;
             } else {
@@ -1148,11 +1148,11 @@ impl Parser {
             && (*ZERO <= value && value < *TWENTY_FOUR)
         {
             // 12am
-            let hour = value.to_i64().unwrap() as i32;
-            res.hour = Some(self.adjust_ampm(hour, info.ampm_index(&tokens[idx + 1]).unwrap()));
+            let hour = value.to_i64().unwrap_or_else(|| unreachable!()) as i32;
+            res.hour = Some(self.adjust_ampm(hour, info.ampm_index(&tokens[idx + 1]).unwrap_or_else(|| unreachable!())));
             idx += 1;
-        } else if ymd.could_be_day(value.to_i64().unwrap() as i32) {
-            ymd.append(value.to_i64().unwrap() as i32, value_repr, None)?;
+        } else if ymd.could_be_day(value.to_i64().unwrap_or_else(|| unreachable!()) as i32) {
+            ymd.append(value.to_i64().unwrap_or_else(|| unreachable!()) as i32, value_repr, None)?;
         } else if !fuzzy {
             return Err(ParseError::UnrecognizedFormat);
         }
@@ -1240,15 +1240,15 @@ impl Parser {
     ) -> (usize, Option<usize>) {
         if hms_index.is_none() {
             (idx, None)
-        } else if hms_index.unwrap() > idx {
+        } else if hms_index.unwrap_or_else(|| unreachable!()) > idx {
             (
-                hms_index.unwrap(),
-                info.hms_index(&tokens[hms_index.unwrap()]),
+                hms_index.unwrap_or_else(|| unreachable!()),
+                info.hms_index(&tokens[hms_index.unwrap_or_else(|| unreachable!())]),
             )
         } else {
             (
                 idx,
-                info.hms_index(&tokens[hms_index.unwrap()]).map(|u| u + 1),
+                info.hms_index(&tokens[hms_index.unwrap_or_else(|| unreachable!())]).map(|u| u + 1),
             )
         }
     }
@@ -1259,14 +1259,14 @@ impl Parser {
         if hms == 0 {
             res.hour = value.to_i32();
             if !close_to_integer(&value) {
-                res.minute = Some((*SIXTY * (value % *ONE)).to_i64().unwrap() as i32);
+                res.minute = Some((*SIXTY * (value % *ONE)).to_i64().unwrap_or_else(|| unreachable!()) as i32);
             }
         } else if hms == 1 {
             let (min, sec) = self.parse_min_sec(value);
             res.minute = Some(min);
             res.second = sec;
         } else if hms == 2 {
-            let (sec, micro) = self.parsems(value_repr).unwrap();
+            let (sec, micro) = self.parsems(value_repr).unwrap_or_else(|_| unreachable!());
             res.second = Some(sec);
             res.nanosecond = Some(micro);
         }
@@ -1280,12 +1280,12 @@ impl Parser {
 
     fn parse_min_sec(&self, value: Decimal) -> (i32, Option<i32>) {
         // UNWRAP: i64 guaranteed to be fine because of preceding floor
-        let minute = value.floor().to_i64().unwrap() as i32;
+        let minute = value.floor().to_i64().unwrap_or_else(|| unreachable!()) as i32;
         let mut second = None;
 
         let sec_remainder = value - value.floor();
         if sec_remainder != *ZERO {
-            second = Some((*SIXTY * sec_remainder).floor().to_i64().unwrap() as i32);
+            second = Some((*SIXTY * sec_remainder).floor().to_i64().unwrap_or_else(|| unreachable!()) as i32);
         }
 
         (minute, second)
@@ -1300,7 +1300,7 @@ impl Parser {
         for (i, idx) in sorted_idxs.iter().enumerate() {
             if i > 0 && idx - 1 == skipped_idxs[i - 1] {
                 // UNWRAP: Having an initial value and unconditional push at end guarantees value
-                let mut t = skipped_tokens.pop().unwrap();
+                let mut t = skipped_tokens.pop().unwrap_or_else(|| unreachable!());
                 t.push_str(tokens[*idx].as_ref());
                 skipped_tokens.push(t);
             } else {
