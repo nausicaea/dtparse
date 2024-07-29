@@ -370,14 +370,14 @@ fn days_in_month(year: i32, month: i32) -> Result<u32, ParseError> {
 }
 
 #[derive(Debug, Hash, PartialEq, Eq)]
-enum YMDLabel {
+enum YmdLabel {
     Year,
     Month,
     Day,
 }
 
 #[derive(Debug, Default)]
-struct YMD {
+struct Ymd {
     _ymd: Vec<i32>, // TODO: This seems like a super weird way to store things
     century_specified: bool,
     dstridx: Option<usize>,
@@ -385,7 +385,7 @@ struct YMD {
     ystridx: Option<usize>,
 }
 
-impl YMD {
+impl Ymd {
     fn len(&self) -> usize {
         self._ymd.len()
     }
@@ -407,7 +407,7 @@ impl YMD {
         }
     }
 
-    fn append(&mut self, val: i32, token: &str, label: Option<YMDLabel>) -> ParseResult<()> {
+    fn append(&mut self, val: i32, token: &str, label: Option<YmdLabel>) -> ParseResult<()> {
         let mut label = label;
 
         // Python auto-detects strings using the '__len__' function here.
@@ -415,30 +415,30 @@ impl YMD {
         if Decimal::from_str(token).is_ok() && token.len() > 2 {
             self.century_specified = true;
             match label {
-                None | Some(YMDLabel::Year) => label = Some(YMDLabel::Year),
-                Some(YMDLabel::Month) => {
+                None | Some(YmdLabel::Year) => label = Some(YmdLabel::Year),
+                Some(YmdLabel::Month) => {
                     return Err(ParseError::ImpossibleTimestamp("Invalid month"))
                 }
-                Some(YMDLabel::Day) => return Err(ParseError::ImpossibleTimestamp("Invalid day")),
+                Some(YmdLabel::Day) => return Err(ParseError::ImpossibleTimestamp("Invalid day")),
             }
         }
 
         if val > 100 {
             self.century_specified = true;
             match label {
-                None => label = Some(YMDLabel::Year),
-                Some(YMDLabel::Year) => (),
-                Some(YMDLabel::Month) => {
+                None => label = Some(YmdLabel::Year),
+                Some(YmdLabel::Year) => (),
+                Some(YmdLabel::Month) => {
                     return Err(ParseError::ImpossibleTimestamp("Invalid month"))
                 }
-                Some(YMDLabel::Day) => return Err(ParseError::ImpossibleTimestamp("Invalid day")),
+                Some(YmdLabel::Day) => return Err(ParseError::ImpossibleTimestamp("Invalid day")),
             }
         }
 
         self._ymd.push(val);
 
         match label {
-            Some(YMDLabel::Month) => {
+            Some(YmdLabel::Month) => {
                 if self.mstridx.is_some() {
                     Err(ParseError::YearMonthDayError("Month already set"))
                 } else {
@@ -446,7 +446,7 @@ impl YMD {
                     Ok(())
                 }
             }
-            Some(YMDLabel::Day) => {
+            Some(YmdLabel::Day) => {
                 if self.dstridx.is_some() {
                     Err(ParseError::YearMonthDayError("Day already set"))
                 } else {
@@ -454,7 +454,7 @@ impl YMD {
                     Ok(())
                 }
             }
-            Some(YMDLabel::Year) => {
+            Some(YmdLabel::Year) => {
                 if self.ystridx.is_some() {
                     Err(ParseError::YearMonthDayError("Year already set"))
                 } else {
@@ -468,15 +468,15 @@ impl YMD {
 
     fn resolve_from_stridxs(
         &mut self,
-        strids: &mut HashMap<YMDLabel, usize>,
+        strids: &mut HashMap<YmdLabel, usize>,
     ) -> ParseResult<(Option<i32>, Option<i32>, Option<i32>)> {
         if self._ymd.len() == 3 && strids.len() == 2 {
-            let missing_key = if !strids.contains_key(&YMDLabel::Year) {
-                YMDLabel::Year
-            } else if !strids.contains_key(&YMDLabel::Month) {
-                YMDLabel::Month
+            let missing_key = if !strids.contains_key(&YmdLabel::Year) {
+                YmdLabel::Year
+            } else if !strids.contains_key(&YmdLabel::Month) {
+                YmdLabel::Month
             } else {
-                YMDLabel::Day
+                YmdLabel::Day
             };
 
             let strids_vals: Vec<usize> = strids.values().copied().collect();
@@ -498,9 +498,9 @@ impl YMD {
         }
 
         Ok((
-            strids.get(&YMDLabel::Year).map(|i| self._ymd[*i]),
-            strids.get(&YMDLabel::Month).map(|i| self._ymd[*i]),
-            strids.get(&YMDLabel::Day).map(|i| self._ymd[*i]),
+            strids.get(&YmdLabel::Year).map(|i| self._ymd[*i]),
+            strids.get(&YmdLabel::Month).map(|i| self._ymd[*i]),
+            strids.get(&YmdLabel::Day).map(|i| self._ymd[*i]),
         ))
     }
 
@@ -512,10 +512,10 @@ impl YMD {
     ) -> ParseResult<(Option<i32>, Option<i32>, Option<i32>)> {
         let len_ymd = self._ymd.len();
 
-        let mut strids: HashMap<YMDLabel, usize> = HashMap::new();
-        self.ystridx.map(|u| strids.insert(YMDLabel::Year, u));
-        self.mstridx.map(|u| strids.insert(YMDLabel::Month, u));
-        self.dstridx.map(|u| strids.insert(YMDLabel::Day, u));
+        let mut strids: HashMap<YmdLabel, usize> = HashMap::new();
+        self.ystridx.map(|u| strids.insert(YmdLabel::Year, u));
+        self.mstridx.map(|u| strids.insert(YmdLabel::Month, u));
+        self.dstridx.map(|u| strids.insert(YmdLabel::Day, u));
 
         // TODO: More Rustiomatic way of doing this?
         if len_ymd == strids.len() && !strids.is_empty() || (len_ymd == 3 && strids.len() == 2) {
@@ -744,7 +744,7 @@ impl Parser {
         let mut l = tokenize(timestr);
         let mut skipped_idxs: Vec<usize> = Vec::new();
 
-        let mut ymd = YMD::default();
+        let mut ymd = Ymd::default();
 
         let len_l = l.len();
         let mut i = 0;
@@ -757,7 +757,7 @@ impl Parser {
             } else if let Some(value) = self.info.weekday_index(&l[i]) {
                 res.weekday = Some(value);
             } else if let Some(value) = self.info.month_index(&l[i]) {
-                ymd.append(value as i32, &l[i], Some(YMDLabel::Month))?;
+                ymd.append(value as i32, &l[i], Some(YmdLabel::Month))?;
 
                 if i + 1 < len_l {
                     if l[i + 1] == "-" || l[i + 1] == "/" {
@@ -781,7 +781,7 @@ impl Parser {
                         // Jan of 01
                         if let Ok(value) = l[i + 4].parse::<i32>() {
                             let year = self.info.convertyear(value, false);
-                            ymd.append(year, &l[i + 4], Some(YMDLabel::Year))?;
+                            ymd.append(year, &l[i + 4], Some(YmdLabel::Year))?;
                         }
 
                         i += 4;
@@ -1014,7 +1014,7 @@ impl Parser {
         tokens: &[String],
         idx: usize,
         info: &ParserInfo,
-        ymd: &mut YMD,
+        ymd: &mut Ymd,
         res: &mut ParsingResult,
         fuzzy: bool,
     ) -> ParseResult<usize> {
@@ -1060,7 +1060,7 @@ impl Parser {
         } else if [8, 12, 14].contains(&len_li) {
             // YYMMDD
             let s = &tokens[idx];
-            ymd.append(s[..4].parse::<i32>()?, &s[..4], Some(YMDLabel::Year))?;
+            ymd.append(s[..4].parse::<i32>()?, &s[..4], Some(YmdLabel::Year))?;
             ymd.append(s[4..6].parse::<i32>()?, &s[4..6], None)?;
             ymd.append(s[6..8].parse::<i32>()?, &s[6..8], None)?;
 
@@ -1109,12 +1109,12 @@ impl Parser {
                 if let Ok(val) = tokens[idx + 2].parse::<i32>() {
                     ymd.append(val, &tokens[idx + 2], None)?;
                 } else if let Some(val) = info.month_index(&tokens[idx + 2]) {
-                    ymd.append(val as i32, &tokens[idx + 2], Some(YMDLabel::Month))?;
+                    ymd.append(val as i32, &tokens[idx + 2], Some(YmdLabel::Month))?;
                 }
 
                 if idx + 3 < len_l && &tokens[idx + 3] == sep {
                     if let Some(value) = info.month_index(&tokens[idx + 4]) {
-                        ymd.append(value as i32, &tokens[idx + 4], Some(YMDLabel::Month))?;
+                        ymd.append(value as i32, &tokens[idx + 4], Some(YmdLabel::Month))?;
                     } else if let Ok(val) = tokens[idx + 4].parse::<i32>() {
                         ymd.append(val, &tokens[idx + 4], None)?;
                     } else {
