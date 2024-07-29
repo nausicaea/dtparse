@@ -715,13 +715,13 @@ impl Parser {
             return Err(ParseError::NoDate);
         }
 
-        let naive = self.build_naive(&res, &default_ts)?;
+        let naive = Parser::build_naive(&res, &default_ts)?;
 
-        if !ignoretz {
-            let offset = self.build_tzaware(&naive, &res, tzinfos)?;
-            Ok((naive, offset, tokens))
-        } else {
+        if ignoretz {
             Ok((naive, None, tokens))
+        } else {
+            let offset = Parser::build_tzaware(&naive, &res, tzinfos)?;
+            Ok((naive, offset, tokens))
         }
     }
 
@@ -761,7 +761,7 @@ impl Parser {
             let value_repr = l[i].clone();
 
             if let Ok(_v) = Decimal::from_str(&value_repr) {
-                i = self.parse_numeric_token(&l, i, &self.info, &mut ymd, &mut res, fuzzy)?;
+                i = Parser::parse_numeric_token(&l, i, &self.info, &mut ymd, &mut res, fuzzy)?;
             } else if let Some(value) = self.info.weekday_index(&l[i]) {
                 res.weekday = Some(value);
             } else if let Some(value) = self.info.month_index(&l[i]) {
@@ -796,7 +796,7 @@ impl Parser {
                     }
                 }
             } else if let Some(value) = self.info.ampm_index(&l[i]) {
-                let is_ampm = self.ampm_valid(res.hour, res.ampm, fuzzy);
+                let is_ampm = Parser::ampm_valid(res.hour, res.ampm, fuzzy);
 
                 if is_ampm == Ok(true) {
                     res.hour = res.hour.map(|h| Parser::adjust_ampm(h, value));
@@ -917,7 +917,7 @@ impl Parser {
             && (all_ascii_upper || self.info.utczone.contains_key(token))
     }
 
-    fn ampm_valid(&self, hour: Option<i32>, ampm: Option<bool>, fuzzy: bool) -> ParseResult<bool> {
+    fn ampm_valid(hour: Option<i32>, ampm: Option<bool>, fuzzy: bool) -> ParseResult<bool> {
         let mut val_is_ampm = !(fuzzy && ampm.is_some());
 
         if hour.is_none() {
@@ -940,7 +940,6 @@ impl Parser {
     }
 
     fn build_naive(
-        &self,
         res: &ParsingResult,
         default: &NaiveDateTime,
     ) -> ParseResult<NaiveDateTime> {
@@ -997,7 +996,6 @@ impl Parser {
     }
 
     fn build_tzaware(
-        &self,
         _dt: &NaiveDateTime,
         res: &ParsingResult,
         tzinfos: &HashMap<String, i32>,
@@ -1028,7 +1026,6 @@ impl Parser {
     }
 
     fn parse_numeric_token(
-        &self,
         tokens: &[String],
         idx: usize,
         info: &ParserInfo,
@@ -1094,7 +1091,7 @@ impl Parser {
             // HH[ ]h or MM[ ]m or SS[.ss][ ]s
             let (new_idx, hms) = Parser::parse_hms(idx, tokens, info, Some(hms_idx));
             if let Some(hms) = hms {
-                self.assign_hms(res, value_repr, hms)?;
+                Parser::assign_hms(res, value_repr, hms)?;
             }
             idx = new_idx;
         } else if idx + 2 < len_l && tokens[idx + 1] == ":" {
@@ -1282,7 +1279,7 @@ impl Parser {
         }
     }
 
-    fn assign_hms(&self, res: &mut ParsingResult, value_repr: &str, hms: usize) -> ParseResult<()> {
+    fn assign_hms(res: &mut ParsingResult, value_repr: &str, hms: usize) -> ParseResult<()> {
         let value = Parser::to_decimal(value_repr)?;
 
         if hms == 0 {
