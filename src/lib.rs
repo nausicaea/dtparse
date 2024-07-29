@@ -717,7 +717,8 @@ impl Parser {
     ) -> ParseResult<(NaiveDateTime, Option<FixedOffset>, Option<Vec<String>>)> {
         let default_date = default.unwrap_or(&Local::now().naive_local()).date();
 
-        let default_ts = NaiveDateTime::new(default_date, NaiveTime::from_hms_opt(0, 0, 0).unwrap());
+        let default_ts =
+            NaiveDateTime::new(default_date, NaiveTime::from_hms_opt(0, 0, 0).unwrap());
 
         let (res, tokens) =
             self.parse_with_tokens(timestr, dayfirst, yearfirst, fuzzy, fuzzy_with_tokens)?;
@@ -1157,7 +1158,10 @@ impl Parser {
                 idx += 1;
             } else {
                 //let value = value.floor().to_i32().ok_or(Err(ParseError::InvalidNumeric()))
-                let value = value.floor().to_i32().ok_or_else(|| ParseError::InvalidNumeric(value_repr.to_owned()))?;
+                let value = value
+                    .floor()
+                    .to_i32()
+                    .ok_or_else(|| ParseError::InvalidNumeric(value_repr.to_owned()))?;
                 ymd.append(value, &value_repr, None)?;
             }
 
