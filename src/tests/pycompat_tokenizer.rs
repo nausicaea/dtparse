@@ -2,7 +2,7 @@
 //! in the repository root. Please do not edit it, as your edits will be destroyed
 //! upon re-running code generation.
 
-use tokenize::Tokenizer;
+use crate::tokenize::Tokenizer;
 
 fn tokenize_assert(test_str: &str, comparison: Vec<&str>) {
     let tokens: Vec<String> = Tokenizer::new(test_str).collect();

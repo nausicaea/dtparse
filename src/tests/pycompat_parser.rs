@@ -10,9 +10,9 @@ use chrono::NaiveDateTime;
 use chrono::Timelike;
 use std::collections::HashMap;
 
-use parse;
-use Parser;
-use ParserInfo;
+use crate::parse;
+use crate::Parser;
+use crate::ParserInfo;
 
 struct PyDateTime {
     year: i32,

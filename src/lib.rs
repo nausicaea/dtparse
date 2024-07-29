@@ -11,9 +11,7 @@
 //! sense of the dates and times they contain. A couple of quick examples
 //! from the test cases should give some context:
 //!
-//! ```rust,ignore (tests-dont-compile-on-old-rust)
-//! # extern crate chrono;
-//! # extern crate dtparse;
+//! ```rust
 //! use chrono::prelude::*;
 //! use dtparse::parse;
 //!
@@ -35,9 +33,7 @@
 //! And we can even handle fuzzy strings where dates/times aren't the
 //! only content if we dig into the implementation a bit!
 //!
-//! ```rust,ignore (tests-dont-compile-on-old-rust)
-//! # extern crate chrono;
-//! # extern crate dtparse;
+//! ```rust
 //! use chrono::prelude::*;
 //! use dtparse::Parser;
 //! # use std::collections::HashMap;
@@ -70,16 +66,6 @@
 //!
 //! [dateutil]: https://github.com/dateutil/dateutil
 
-#[macro_use]
-extern crate lazy_static;
-
-extern crate chrono;
-extern crate num_traits;
-extern crate rust_decimal;
-
-#[cfg(test)]
-extern crate base64;
-
 use chrono::Datelike;
 use chrono::Duration;
 use chrono::FixedOffset;
@@ -109,7 +95,7 @@ use tokenize::Tokenizer;
 use weekday::day_of_week;
 use weekday::DayOfWeek;
 
-lazy_static! {
+lazy_static::lazy_static! {
     static ref ZERO: Decimal = Decimal::new(0, 0);
     static ref ONE: Decimal = Decimal::new(1, 0);
     static ref TWENTY_FOUR: Decimal = Decimal::new(24, 0);

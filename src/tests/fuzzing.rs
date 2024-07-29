@@ -4,9 +4,9 @@ use chrono::NaiveDate;
 use std::collections::HashMap;
 use std::str;
 
-use parse;
-use ParseError;
-use Parser;
+use crate::parse;
+use crate::ParseError;
+use crate::Parser;
 
 #[test]
 fn test_fuzz() {

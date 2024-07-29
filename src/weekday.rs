@@ -1,5 +1,5 @@
-use ParseError;
-use ParseResult;
+use crate::ParseError;
+use crate::ParseResult;
 
 #[derive(Debug, PartialEq)]
 pub enum DayOfWeek {
@@ -102,8 +102,8 @@ pub fn day_of_week(year: u32, month: u32, day: u32) -> ParseResult<DayOfWeek> {
 #[allow(unused_imports)]
 mod test {
 
-    use weekday::day_of_week;
-    use weekday::DayOfWeek;
+    use crate::weekday::day_of_week;
+    use crate::weekday::DayOfWeek;
 
     #[test]
     fn day_of_week_examples() {

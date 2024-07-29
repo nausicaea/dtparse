@@ -181,8 +181,7 @@ impl Iterator for Tokenizer {
 
 #[cfg(test)]
 mod tests {
-
-    use Tokenizer;
+    use super::Tokenizer;
 
     #[test]
     fn test_basic() {
