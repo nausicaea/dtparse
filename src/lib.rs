@@ -539,7 +539,7 @@ impl Ymd {
                 if other > 31 {
                     return Ok((Some(other), Some(self.ymd[val]), None));
                 }
-                return Ok((None, Some(self.ymd[val]), Some(other)));
+                Ok((None, Some(self.ymd[val]), Some(other)))
             }
             (2, None) => {
                 if self.ymd[0] > 31 {
@@ -551,26 +551,26 @@ impl Ymd {
                 if dayfirst && self.ymd[1] <= 12 {
                     return Ok((None, Some(self.ymd[1]), Some(self.ymd[0])));
                 }
-                return Ok((None, Some(self.ymd[0]), Some(self.ymd[1])));
+                Ok((None, Some(self.ymd[0]), Some(self.ymd[1])))
             }
             (3, Some(0)) => {
                 if self.ymd[1] > 31 {
                     return Ok((Some(self.ymd[1]), Some(self.ymd[0]), Some(self.ymd[2])));
                 }
-                return Ok((Some(self.ymd[2]), Some(self.ymd[0]), Some(self.ymd[1])));
+                Ok((Some(self.ymd[2]), Some(self.ymd[0]), Some(self.ymd[1])))
             }
             (3, Some(1)) => {
                 if self.ymd[0] > 31 || (yearfirst && self.ymd[2] <= 31) {
                     return Ok((Some(self.ymd[0]), Some(self.ymd[1]), Some(self.ymd[2])));
                 }
-                return Ok((Some(self.ymd[2]), Some(self.ymd[1]), Some(self.ymd[0])));
+                Ok((Some(self.ymd[2]), Some(self.ymd[1]), Some(self.ymd[0])))
             }
             (3, Some(2)) => {
                 // It was in the original docs, so: WTF!?
                 if self.ymd[1] > 31 {
                     return Ok((Some(self.ymd[2]), Some(self.ymd[1]), Some(self.ymd[0])));
                 }
-                return Ok((Some(self.ymd[0]), Some(self.ymd[2]), Some(self.ymd[1])));
+                Ok((Some(self.ymd[0]), Some(self.ymd[2]), Some(self.ymd[1])))
             }
             (3, None) => {
                 if self.ymd[0] > 31
@@ -584,10 +584,10 @@ impl Ymd {
                 } else if self.ymd[0] > 12 || (dayfirst && self.ymd[1] <= 12) {
                     return Ok((Some(self.ymd[2]), Some(self.ymd[1]), Some(self.ymd[0])));
                 }
-                return Ok((Some(self.ymd[2]), Some(self.ymd[0]), Some(self.ymd[1])));
+                Ok((Some(self.ymd[2]), Some(self.ymd[0]), Some(self.ymd[1])))
             }
             (_, _) => {
-                return Ok((None, None, None));
+                Ok((None, None, None))
             }
         }
     }
