@@ -35,12 +35,12 @@ impl Tokenizer {
 
     fn decimal_split(&self, s: &str) -> Vec<String> {
         // Handles the same thing as Python's re.split()
-        let mut tokens: Vec<String> = vec!["".to_owned()];
+        let mut tokens: Vec<String> = vec![String::new()];
 
         for c in s.chars() {
             if c == '.' || c == ',' {
                 tokens.push(c.to_string());
-                tokens.push("".to_owned());
+                tokens.push(String::new());
             } else {
                 // UNWRAP: Initial setup guarantees we always have an item
                 let mut t = tokens.pop().unwrap();
@@ -50,7 +50,7 @@ impl Tokenizer {
         }
 
         // TODO: Do I really have to use &String instead of &str?
-        if tokens.last() == Some(&"".to_owned()) {
+        if tokens.last() == Some(&String::new()) {
             tokens.pop();
         }
 

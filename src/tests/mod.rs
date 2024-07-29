@@ -16,5 +16,5 @@ fn nanosecond_precision() {
                 .unwrap(),
             None
         )
-    )
+    );
 }

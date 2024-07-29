@@ -64,7 +64,7 @@ fn an_even_larger_int() {
 
 #[test]
 fn empty_string() {
-    assert_eq!(parse(""), Err(ParseError::NoDate))
+    assert_eq!(parse(""), Err(ParseError::NoDate));
 }
 
 #[test]
@@ -72,7 +72,7 @@ fn github_33() {
     assert_eq!(
         parse("66:'"),
         Err(ParseError::InvalidNumeric("'".to_owned()))
-    )
+    );
 }
 
 #[test]
@@ -82,7 +82,7 @@ fn github_32() {
         Err(ParseError::InvalidNumeric(
             "99999999999999999999999".to_owned()
         ))
-    )
+    );
 }
 
 #[test]

@@ -6,7 +6,7 @@ use crate::tokenize::Tokenizer;
 
 fn tokenize_assert(test_str: &str, comparison: Vec<&str>) {
     let tokens: Vec<String> = Tokenizer::new(test_str).collect();
-    assert_eq!(tokens, comparison, "Tokenizing mismatch for `{}`", test_str);
+    assert_eq!(tokens, comparison, "Tokenizing mismatch for `{test_str}`");
 }
 
 #[test]

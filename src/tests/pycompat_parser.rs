@@ -49,67 +49,59 @@ fn parse_and_assert(
             ignoretz,
             tzinfos,
         )
-        .expect(&format!("Unable to parse date in Rust '{}'", s));
+        .unwrap_or_else(|_| panic!("Unable to parse date in Rust '{s}'"));
 
-    assert_eq!(pdt.year, rs_parsed.0.year(), "Year mismatch for '{}'", s);
-    assert_eq!(pdt.month, rs_parsed.0.month(), "Month mismatch for '{}'", s);
-    assert_eq!(pdt.day, rs_parsed.0.day(), "Day mismatch for '{}'", s);
-    assert_eq!(pdt.hour, rs_parsed.0.hour(), "Hour mismatch for '{}'", s);
+    assert_eq!(pdt.year, rs_parsed.0.year(), "Year mismatch for '{s}'");
+    assert_eq!(pdt.month, rs_parsed.0.month(), "Month mismatch for '{s}'");
+    assert_eq!(pdt.day, rs_parsed.0.day(), "Day mismatch for '{s}'");
+    assert_eq!(pdt.hour, rs_parsed.0.hour(), "Hour mismatch for '{s}'");
     assert_eq!(
         pdt.minute,
         rs_parsed.0.minute(),
-        "Minute mismatch f'or' {}",
-        s
+        "Minute mismatch f'or' {s}"
     );
     assert_eq!(
         pdt.second,
         rs_parsed.0.second(),
-        "Second mismatch for '{}'",
-        s
+        "Second mismatch for '{s}'"
     );
     assert_eq!(
         pdt.micros,
         rs_parsed.0.timestamp_subsec_micros(),
-        "Microsecond mismatch for '{}'",
-        s
+        "Microsecond mismatch for '{s}'"
     );
     assert_eq!(
         pdt.tzo,
         rs_parsed.1.map(|u| u.local_minus_utc()),
-        "Timezone Offset mismatch for '{}'",
-        s
+        "Timezone Offset mismatch for '{s}'"
     );
 }
 
 fn parse_and_assert_simple(pdt: PyDateTime, s: &str) {
-    let rs_parsed = parse(s).expect(&format!("Unable to parse date in Rust '{}'", s));
-    assert_eq!(pdt.year, rs_parsed.0.year(), "Year mismatch for '{}'", s);
-    assert_eq!(pdt.month, rs_parsed.0.month(), "Month mismatch for '{}'", s);
-    assert_eq!(pdt.day, rs_parsed.0.day(), "Day mismatch for '{}'", s);
-    assert_eq!(pdt.hour, rs_parsed.0.hour(), "Hour mismatch for '{}'", s);
+    let rs_parsed = parse(s).unwrap_or_else(|_| panic!("Unable to parse date in Rust '{s}'"));
+    assert_eq!(pdt.year, rs_parsed.0.year(), "Year mismatch for '{s}'");
+    assert_eq!(pdt.month, rs_parsed.0.month(), "Month mismatch for '{s}'");
+    assert_eq!(pdt.day, rs_parsed.0.day(), "Day mismatch for '{s}'");
+    assert_eq!(pdt.hour, rs_parsed.0.hour(), "Hour mismatch for '{s}'");
     assert_eq!(
         pdt.minute,
         rs_parsed.0.minute(),
-        "Minute mismatch for '{}'",
-        s
+        "Minute mismatch for '{s}'"
     );
     assert_eq!(
         pdt.second,
         rs_parsed.0.second(),
-        "Second mismatch for '{}'",
-        s
+        "Second mismatch for '{s}'"
     );
     assert_eq!(
         pdt.micros,
         rs_parsed.0.timestamp_subsec_micros(),
-        "Microsecond mismatch for '{}'",
-        s
+        "Microsecond mismatch for '{s}'"
     );
     assert_eq!(
         pdt.tzo,
         rs_parsed.1.map(|u| u.local_minus_utc()),
-        "Timezone Offset mismatch for '{}'",
-        s
+        "Timezone Offset mismatch for '{s}'"
     );
 }
 
@@ -138,37 +130,33 @@ fn parse_fuzzy_and_assert(
             ignoretz,
             tzinfos,
         )
-        .expect(&format!("Unable to parse date in Rust '{}'", s));
+        .unwrap_or_else(|_| panic!("Unable to parse date in Rust '{s}'"));
 
-    assert_eq!(pdt.year, rs_parsed.0.year(), "Year mismatch for '{}'", s);
-    assert_eq!(pdt.month, rs_parsed.0.month(), "Month mismatch for '{}'", s);
-    assert_eq!(pdt.day, rs_parsed.0.day(), "Day mismatch for '{}'", s);
-    assert_eq!(pdt.hour, rs_parsed.0.hour(), "Hour mismatch for '{}'", s);
+    assert_eq!(pdt.year, rs_parsed.0.year(), "Year mismatch for '{s}'");
+    assert_eq!(pdt.month, rs_parsed.0.month(), "Month mismatch for '{s}'");
+    assert_eq!(pdt.day, rs_parsed.0.day(), "Day mismatch for '{s}'");
+    assert_eq!(pdt.hour, rs_parsed.0.hour(), "Hour mismatch for '{s}'");
     assert_eq!(
         pdt.minute,
         rs_parsed.0.minute(),
-        "Minute mismatch f'or' {}",
-        s
+        "Minute mismatch f'or' {s}"
     );
     assert_eq!(
         pdt.second,
         rs_parsed.0.second(),
-        "Second mismatch for '{}'",
-        s
+        "Second mismatch for '{s}'"
     );
     assert_eq!(
         pdt.micros,
         rs_parsed.0.timestamp_subsec_micros(),
-        "Microsecond mismatch for '{}'",
-        s
+        "Microsecond mismatch for '{s}'"
     );
     assert_eq!(
         pdt.tzo,
         rs_parsed.1.map(|u| u.local_minus_utc()),
-        "Timezone Offset mismatch for '{}'",
-        s
+        "Timezone Offset mismatch for '{s}'"
     );
-    assert_eq!(ptokens, rs_parsed.2, "Tokens mismatch for '{}'", s);
+    assert_eq!(ptokens, rs_parsed.2, "Tokens mismatch for '{s}'");
 }
 
 macro_rules! rs_tzinfo_map {
@@ -410,7 +398,7 @@ fn test_parse_default7() {
         hour: 10,
         minute: 36,
         second: 28,
-        micros: 500000,
+        micros: 500_000,
         tzo: None,
     };
     parse_and_assert(
@@ -1795,7 +1783,7 @@ fn test_parse_simple10() {
         hour: 10,
         minute: 49,
         second: 41,
-        micros: 502000,
+        micros: 502_000,
         tzo: None,
     };
     parse_and_assert_simple(pdt, "2003-09-25 10:49:41,502");
@@ -2380,7 +2368,7 @@ fn test_parse_simple49() {
         hour: 11,
         minute: 23,
         second: 34,
-        micros: 578000,
+        micros: 578_000,
         tzo: None,
     };
     parse_and_assert_simple(pdt, "Jan 1 1999 11:23:34.578");
@@ -2485,7 +2473,7 @@ fn test_parse_simple56() {
         hour: 21,
         minute: 26,
         second: 1,
-        micros: 123456,
+        micros: 123_456,
         tzo: None,
     };
     parse_and_assert_simple(pdt, "20080227T21:26:01.123456789");
@@ -2657,7 +2645,7 @@ fn test_parse_offset1() {
         hour: 10,
         minute: 49,
         second: 41,
-        micros: 500000,
+        micros: 500_000,
         tzo: Some(-10800),
     };
     parse_and_assert(
@@ -2711,7 +2699,7 @@ fn test_parse_offset3() {
         hour: 10,
         minute: 49,
         second: 41,
-        micros: 500000,
+        micros: 500_000,
         tzo: Some(-10800),
     };
     parse_and_assert(
