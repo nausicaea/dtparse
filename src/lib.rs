@@ -799,7 +799,7 @@ impl Parser {
                 let is_ampm = self.ampm_valid(res.hour, res.ampm, fuzzy);
 
                 if is_ampm == Ok(true) {
-                    res.hour = res.hour.map(|h| self.adjust_ampm(h, value));
+                    res.hour = res.hour.map(|h| Parser::adjust_ampm(h, value));
                     res.ampm = Some(value);
                 } else if fuzzy {
                     skipped_idxs.push(i);
@@ -892,7 +892,7 @@ impl Parser {
         if !self.info.validate(&mut res) {
             Err(ParseError::UnrecognizedFormat)
         } else if fuzzy_with_tokens {
-            let skipped_tokens = self.recombine_skipped(skipped_idxs, l);
+            let skipped_tokens = Parser::recombine_skipped(&skipped_idxs, &l);
             Ok((res, Some(skipped_tokens)))
         } else {
             Ok((res, None))
@@ -1071,7 +1071,7 @@ impl Parser {
                 res.hour = s[0..2].parse::<i32>().ok();
                 res.minute = s[2..4].parse::<i32>().ok();
 
-                let t = self.parsems(&s[4..])?;
+                let t = Parser::parsems(&s[4..])?;
                 res.second = Some(t.0);
                 res.nanosecond = Some(t.1);
             }
@@ -1090,9 +1090,9 @@ impl Parser {
                     res.second = Some(s[12..].parse::<i32>()?);
                 }
             }
-        } else if let Some(hms_idx) = self.find_hms_index(idx, tokens, info, true) {
+        } else if let Some(hms_idx) = Parser::find_hms_index(idx, tokens, info, true) {
             // HH[ ]h or MM[ ]m or SS[.ss][ ]s
-            let (new_idx, hms) = self.parse_hms(idx, tokens, info, Some(hms_idx));
+            let (new_idx, hms) = Parser::parse_hms(idx, tokens, info, Some(hms_idx));
             if let Some(hms) = hms {
                 self.assign_hms(res, value_repr, hms)?;
             }
@@ -1102,15 +1102,14 @@ impl Parser {
             // TODO: Better story around Decimal handling
             res.hour = Some(value.floor().to_i64().unwrap_or_else(|| unreachable!()) as i32);
             // TODO: Rescope `value` here?
-            value = self.to_decimal(&tokens[idx + 2])?;
-            let min_sec = self.parse_min_sec(value);
+            value = Parser::to_decimal(&tokens[idx + 2])?;
+            let min_sec = Parser::parse_min_sec(value);
             res.minute = Some(min_sec.0);
             res.second = min_sec.1;
 
             if idx + 4 < len_l && tokens[idx + 3] == ":" {
                 // TODO: (x, y) = (a, b) syntax?
-                let ms = self
-                    .parsems(&tokens[idx + 4])
+                let ms = Parser::parsems(&tokens[idx + 4])
                     .unwrap_or_else(|_| unreachable!());
                 res.second = Some(ms.0);
                 res.nanosecond = Some(ms.1);
@@ -1154,7 +1153,7 @@ impl Parser {
                 let ampm = info
                     .ampm_index(&tokens[idx + 2])
                     .unwrap_or_else(|| unreachable!());
-                res.hour = Some(self.adjust_ampm(hour, ampm));
+                res.hour = Some(Parser::adjust_ampm(hour, ampm));
                 idx += 1;
             } else {
                 //let value = value.floor().to_i32().ok_or(Err(ParseError::InvalidNumeric()))
@@ -1172,7 +1171,7 @@ impl Parser {
             // 12am
             let hour = value.to_i64().unwrap_or_else(|| unreachable!()) as i32;
             res.hour = Some(
-                self.adjust_ampm(
+                Parser::adjust_ampm(
                     hour,
                     info.ampm_index(&tokens[idx + 1])
                         .unwrap_or_else(|| unreachable!()),
@@ -1192,7 +1191,7 @@ impl Parser {
         Ok(idx)
     }
 
-    fn adjust_ampm(&self, hour: i32, ampm: bool) -> i32 {
+    fn adjust_ampm(hour: i32, ampm: bool) -> i32 {
         if hour < 12 && ampm {
             hour + 12
         } else if hour == 12 && !ampm {
@@ -1202,7 +1201,7 @@ impl Parser {
         }
     }
 
-    fn parsems(&self, seconds_str: &str) -> ParseResult<(i32, i64)> {
+    fn parsems(seconds_str: &str) -> ParseResult<(i32, i64)> {
         if seconds_str.contains('.') {
             let split: Vec<&str> = seconds_str.split('.').collect();
             let (i, f): (&str, &str) = (split[0], split[1]);
@@ -1216,7 +1215,6 @@ impl Parser {
     }
 
     fn find_hms_index(
-        &self,
         idx: usize,
         tokens: &[String],
         info: &ParserInfo,
@@ -1263,7 +1261,6 @@ impl Parser {
     }
 
     fn parse_hms(
-        &self,
         idx: usize,
         tokens: &[String],
         info: &ParserInfo,
@@ -1286,7 +1283,7 @@ impl Parser {
     }
 
     fn assign_hms(&self, res: &mut ParsingResult, value_repr: &str, hms: usize) -> ParseResult<()> {
-        let value = self.to_decimal(value_repr)?;
+        let value = Parser::to_decimal(value_repr)?;
 
         if hms == 0 {
             res.hour = value.to_i32();
@@ -1298,11 +1295,11 @@ impl Parser {
                 );
             }
         } else if hms == 1 {
-            let (min, sec) = self.parse_min_sec(value);
+            let (min, sec) = Parser::parse_min_sec(value);
             res.minute = Some(min);
             res.second = sec;
         } else if hms == 2 {
-            let (sec, micro) = self.parsems(value_repr).unwrap_or_else(|_| unreachable!());
+            let (sec, micro) = Parser::parsems(value_repr).unwrap_or_else(|_| unreachable!());
             res.second = Some(sec);
             res.nanosecond = Some(micro);
         }
@@ -1310,11 +1307,11 @@ impl Parser {
         Ok(())
     }
 
-    fn to_decimal(&self, value: &str) -> ParseResult<Decimal> {
+    fn to_decimal(value: &str) -> ParseResult<Decimal> {
         Decimal::from_str(value).map_err(|_| ParseError::InvalidNumeric(value.to_owned()))
     }
 
-    fn parse_min_sec(&self, value: Decimal) -> (i32, Option<i32>) {
+    fn parse_min_sec(value: Decimal) -> (i32, Option<i32>) {
         // UNWRAP: i64 guaranteed to be fine because of preceding floor
         let minute = value.floor().to_i64().unwrap_or_else(|| unreachable!()) as i32;
         let mut second = None;
@@ -1332,10 +1329,10 @@ impl Parser {
         (minute, second)
     }
 
-    fn recombine_skipped(&self, skipped_idxs: Vec<usize>, tokens: Vec<String>) -> Vec<String> {
+    fn recombine_skipped(skipped_idxs: &[usize], tokens: &[String]) -> Vec<String> {
         let mut skipped_tokens: Vec<String> = vec![];
 
-        let mut sorted_idxs = skipped_idxs.clone();
+        let mut sorted_idxs = skipped_idxs.to_owned();
         sorted_idxs.sort_unstable();
 
         for (i, idx) in sorted_idxs.iter().enumerate() {
