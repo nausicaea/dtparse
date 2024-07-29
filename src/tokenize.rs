@@ -21,19 +21,19 @@ impl Tokenizer {
         }
     }
 
-    fn isword(&self, c: char) -> bool {
+    fn isword(c: char) -> bool {
         c.is_alphabetic()
     }
 
-    fn isnum(&self, c: char) -> bool {
+    fn isnum(c: char) -> bool {
         c.is_numeric()
     }
 
-    fn isspace(&self, c: char) -> bool {
+    fn isspace(c: char) -> bool {
         c.is_whitespace()
     }
 
-    fn decimal_split(&self, s: &str) -> Vec<String> {
+    fn decimal_split(s: &str) -> Vec<String> {
         // Handles the same thing as Python's re.split()
         let mut tokens: Vec<String> = vec![String::new()];
 
@@ -81,11 +81,11 @@ impl Iterator for Tokenizer {
             match state {
                 ParseState::Empty => {
                     token = Some(nextchar.to_string());
-                    if self.isword(nextchar) {
+                    if Tokenizer::isword(nextchar) {
                         state = ParseState::Alpha;
-                    } else if self.isnum(nextchar) {
+                    } else if Tokenizer::isnum(nextchar) {
                         state = ParseState::Numeric;
-                    } else if self.isspace(nextchar) {
+                    } else if Tokenizer::isspace(nextchar) {
                         token = Some(" ".to_owned());
                         break;
                     } else {
@@ -94,7 +94,7 @@ impl Iterator for Tokenizer {
                 }
                 ParseState::Alpha => {
                     seenletters = true;
-                    if self.isword(nextchar) {
+                    if Tokenizer::isword(nextchar) {
                         // UNWRAP: Because we're in non-empty parse state, we're guaranteed to have a token
                         token.as_mut().unwrap().push(nextchar);
                     } else if nextchar == '.' {
@@ -106,7 +106,7 @@ impl Iterator for Tokenizer {
                     }
                 }
                 ParseState::Numeric => {
-                    if self.isnum(nextchar) {
+                    if Tokenizer::isnum(nextchar) {
                         // UNWRAP: Because we're in non-empty parse state, we're guaranteed to have a token
                         token.as_mut().unwrap().push(nextchar);
                     } else if nextchar == '.'
@@ -121,10 +121,10 @@ impl Iterator for Tokenizer {
                 }
                 ParseState::AlphaDecimal => {
                     seenletters = true;
-                    if nextchar == '.' || self.isword(nextchar) {
+                    if nextchar == '.' || Tokenizer::isword(nextchar) {
                         // UNWRAP: Because we're in non-empty parse state, we're guaranteed to have a token
                         token.as_mut().unwrap().push(nextchar);
-                    } else if self.isnum(nextchar) && token.as_ref().unwrap().ends_with('.') {
+                    } else if Tokenizer::isnum(nextchar) && token.as_ref().unwrap().ends_with('.') {
                         token.as_mut().unwrap().push(nextchar);
                         state = ParseState::NumericDecimal;
                     } else {
@@ -133,10 +133,10 @@ impl Iterator for Tokenizer {
                     }
                 }
                 ParseState::NumericDecimal => {
-                    if nextchar == '.' || self.isnum(nextchar) {
+                    if nextchar == '.' || Tokenizer::isnum(nextchar) {
                         // UNWRAP: Because we're in non-empty parse state, we're guaranteed to have a token
                         token.as_mut().unwrap().push(nextchar);
-                    } else if self.isword(nextchar) && token.as_ref().unwrap().ends_with('.') {
+                    } else if Tokenizer::isword(nextchar) && token.as_ref().unwrap().ends_with('.') {
                         token.as_mut().unwrap().push(nextchar);
                         state = ParseState::AlphaDecimal;
                     } else {
@@ -161,7 +161,7 @@ impl Iterator for Tokenizer {
             let last_splittable = last_char == Some('.') || last_char == Some(',');
 
             if seenletters || dot_count > 1 || last_splittable {
-                let mut l = self.decimal_split(token.as_ref().unwrap());
+                let mut l = Tokenizer::decimal_split(token.as_ref().unwrap());
                 let remaining = l.split_off(1);
 
                 token = Some(l[0].clone());
