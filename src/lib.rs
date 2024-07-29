@@ -962,7 +962,7 @@ impl Parser {
         let second = res.second.unwrap_or(default.second() as i32) as u32;
         let nanosecond = res
             .nanosecond
-            .unwrap_or(i64::from(default.timestamp_subsec_nanos())) as u32;
+            .unwrap_or(i64::from(default.and_utc().timestamp_subsec_nanos())) as u32;
         let t =
             NaiveTime::from_hms_nano_opt(hour, minute, second, nanosecond).ok_or_else(|| {
                 if hour >= 24 {

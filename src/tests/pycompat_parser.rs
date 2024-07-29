@@ -67,7 +67,7 @@ fn parse_and_assert(
     );
     assert_eq!(
         pdt.micros,
-        rs_parsed.0.timestamp_subsec_micros(),
+        rs_parsed.0.and_utc().timestamp_subsec_micros(),
         "Microsecond mismatch for '{s}'"
     );
     assert_eq!(
@@ -95,7 +95,7 @@ fn parse_and_assert_simple(pdt: PyDateTime, s: &str) {
     );
     assert_eq!(
         pdt.micros,
-        rs_parsed.0.timestamp_subsec_micros(),
+        rs_parsed.0.and_utc().timestamp_subsec_micros(),
         "Microsecond mismatch for '{s}'"
     );
     assert_eq!(
@@ -148,7 +148,7 @@ fn parse_fuzzy_and_assert(
     );
     assert_eq!(
         pdt.micros,
-        rs_parsed.0.timestamp_subsec_micros(),
+        rs_parsed.0.and_utc().timestamp_subsec_micros(),
         "Microsecond mismatch for '{s}'"
     );
     assert_eq!(
