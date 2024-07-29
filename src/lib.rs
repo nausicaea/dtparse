@@ -156,13 +156,18 @@ pub(crate) fn tokenize(parse_string: &str) -> Vec<String> {
 
 /// Utility function for `ParserInfo` that helps in constructing
 /// the attributes that make up the `ParserInfo` container
-#[must_use] 
+#[must_use]
 pub fn parse_info<'a, S: AsRef<[Vec<&'a str>]>>(vec: S) -> HashMap<String, usize> {
     let mut m = HashMap::new();
     let vec = vec.as_ref();
 
     if vec.len() == 1 {
-        for (i, val) in vec.first().unwrap_or_else(|| unreachable!()).iter().enumerate() {
+        for (i, val) in vec
+            .first()
+            .unwrap_or_else(|| unreachable!())
+            .iter()
+            .enumerate()
+        {
             m.insert(val.to_lowercase(), i);
         }
     } else {
@@ -398,12 +403,14 @@ impl Ymd {
         } else if self.ystridx.is_none() {
             // UNWRAP: Earlier condition catches mstridx missing
             let month = self.ymd[self.mstridx.unwrap_or_else(|| unreachable!())];
-            1 <= val && (val <= days_in_month(2000, month).unwrap_or_else(|_| unreachable!()) as i32)
+            1 <= val
+                && (val <= days_in_month(2000, month).unwrap_or_else(|_| unreachable!()) as i32)
         } else {
             // UNWRAP: Earlier conditions prevent us from unsafely unwrapping
             let month = self.ymd[self.mstridx.unwrap_or_else(|| unreachable!())];
             let year = self.ymd[self.ystridx.unwrap_or_else(|| unreachable!())];
-            1 <= val && (val <= days_in_month(year, month).unwrap_or_else(|_| unreachable!()) as i32)
+            1 <= val
+                && (val <= days_in_month(year, month).unwrap_or_else(|_| unreachable!()) as i32)
         }
     }
 
@@ -586,9 +593,7 @@ impl Ymd {
                 }
                 Ok((Some(self.ymd[2]), Some(self.ymd[0]), Some(self.ymd[1])))
             }
-            (_, _) => {
-                Ok((None, None, None))
-            }
+            (_, _) => Ok((None, None, None)),
         }
     }
 }
@@ -649,7 +654,8 @@ impl Parser {
     /// This method allows you to set up a parser to handle different
     /// names for days of the week, months, etc., enabling customization
     /// for different languages or extra values.
-    #[must_use] pub fn new(info: ParserInfo) -> Self {
+    #[must_use]
+    pub fn new(info: ParserInfo) -> Self {
         Parser { info }
     }
 
@@ -697,8 +703,10 @@ impl Parser {
     ) -> ParseResult<(NaiveDateTime, Option<FixedOffset>, Option<Vec<String>>)> {
         let default_date = default.unwrap_or(&Local::now().naive_local()).date();
 
-        let default_ts =
-            NaiveDateTime::new(default_date, NaiveTime::from_hms_opt(0, 0, 0).unwrap_or_else(|| unreachable!()));
+        let default_ts = NaiveDateTime::new(
+            default_date,
+            NaiveTime::from_hms_opt(0, 0, 0).unwrap_or_else(|| unreachable!()),
+        );
 
         let (res, tokens) =
             self.parse_with_tokens(timestr, dayfirst, yearfirst, fuzzy, fuzzy_with_tokens)?;
@@ -845,8 +853,11 @@ impl Parser {
                     min_offset = Some(0);
                 }
 
-                res.tzoffset =
-                    Some(signal * (hour_offset.unwrap_or_else(|| unreachable!()) * 3600 + min_offset.unwrap_or_else(|| unreachable!()) * 60));
+                res.tzoffset = Some(
+                    signal
+                        * (hour_offset.unwrap_or_else(|| unreachable!()) * 3600
+                            + min_offset.unwrap_or_else(|| unreachable!()) * 60),
+                );
 
                 let tzname = res.tzname.clone();
                 if i + 5 < len_l
@@ -915,7 +926,9 @@ impl Parser {
             } else {
                 return Err(ParseError::AmPmWithoutHour);
             }
-        } else if !(0 <= hour.unwrap_or_else(|| unreachable!()) && hour.unwrap_or_else(|| unreachable!()) <= 12) {
+        } else if !(0 <= hour.unwrap_or_else(|| unreachable!())
+            && hour.unwrap_or_else(|| unreachable!()) <= 12)
+        {
             if fuzzy {
                 val_is_ampm = false;
             } else {
@@ -963,7 +976,8 @@ impl Parser {
         let second = res.second.unwrap_or(default.second() as i32) as u32;
         let nanosecond = res
             .nanosecond
-            .unwrap_or(i64::from(default.and_utc().timestamp_subsec_nanos())) as u32;
+            .unwrap_or(i64::from(default.and_utc().timestamp_subsec_nanos()))
+            as u32;
         let t =
             NaiveTime::from_hms_nano_opt(hour, minute, second, nanosecond).ok_or_else(|| {
                 if hour >= 24 {
@@ -997,9 +1011,13 @@ impl Parser {
                 || res.tzname.is_none())
         {
             Ok(None)
-        } else if res.tzname.is_some() && tzinfos.contains_key(res.tzname.as_ref().unwrap_or_else(|| unreachable!())) {
+        } else if res.tzname.is_some()
+            && tzinfos.contains_key(res.tzname.as_ref().unwrap_or_else(|| unreachable!()))
+        {
             Ok(FixedOffset::east_opt(
-                *tzinfos.get(res.tzname.as_ref().unwrap_or_else(|| unreachable!())).unwrap_or_else(|| unreachable!()),
+                *tzinfos
+                    .get(res.tzname.as_ref().unwrap_or_else(|| unreachable!()))
+                    .unwrap_or_else(|| unreachable!()),
             ))
         } else if let Some(tzname) = res.tzname.as_ref() {
             println!("tzname {tzname} identified but not understood.");
@@ -1091,7 +1109,9 @@ impl Parser {
 
             if idx + 4 < len_l && tokens[idx + 3] == ":" {
                 // TODO: (x, y) = (a, b) syntax?
-                let ms = self.parsems(&tokens[idx + 4]).unwrap_or_else(|_| unreachable!());
+                let ms = self
+                    .parsems(&tokens[idx + 4])
+                    .unwrap_or_else(|_| unreachable!());
                 res.second = Some(ms.0);
                 res.nanosecond = Some(ms.1);
 
@@ -1131,7 +1151,9 @@ impl Parser {
         } else if idx + 1 >= len_l || info.jump_index(&tokens[idx + 1]) {
             if idx + 2 < len_l && info.ampm_index(&tokens[idx + 2]).is_some() {
                 let hour = value.to_i64().unwrap_or_else(|| unreachable!()) as i32;
-                let ampm = info.ampm_index(&tokens[idx + 2]).unwrap_or_else(|| unreachable!());
+                let ampm = info
+                    .ampm_index(&tokens[idx + 2])
+                    .unwrap_or_else(|| unreachable!());
                 res.hour = Some(self.adjust_ampm(hour, ampm));
                 idx += 1;
             } else {
@@ -1149,10 +1171,20 @@ impl Parser {
         {
             // 12am
             let hour = value.to_i64().unwrap_or_else(|| unreachable!()) as i32;
-            res.hour = Some(self.adjust_ampm(hour, info.ampm_index(&tokens[idx + 1]).unwrap_or_else(|| unreachable!())));
+            res.hour = Some(
+                self.adjust_ampm(
+                    hour,
+                    info.ampm_index(&tokens[idx + 1])
+                        .unwrap_or_else(|| unreachable!()),
+                ),
+            );
             idx += 1;
         } else if ymd.could_be_day(value.to_i64().unwrap_or_else(|| unreachable!()) as i32) {
-            ymd.append(value.to_i64().unwrap_or_else(|| unreachable!()) as i32, value_repr, None)?;
+            ymd.append(
+                value.to_i64().unwrap_or_else(|| unreachable!()) as i32,
+                value_repr,
+                None,
+            )?;
         } else if !fuzzy {
             return Err(ParseError::UnrecognizedFormat);
         }
@@ -1247,7 +1279,8 @@ impl Parser {
         } else {
             (
                 idx,
-                info.hms_index(&tokens[hms_index.unwrap_or_else(|| unreachable!())]).map(|u| u + 1),
+                info.hms_index(&tokens[hms_index.unwrap_or_else(|| unreachable!())])
+                    .map(|u| u + 1),
             )
         }
     }
@@ -1258,7 +1291,11 @@ impl Parser {
         if hms == 0 {
             res.hour = value.to_i32();
             if !close_to_integer(&value) {
-                res.minute = Some((*SIXTY * (value % *ONE)).to_i64().unwrap_or_else(|| unreachable!()) as i32);
+                res.minute = Some(
+                    (*SIXTY * (value % *ONE))
+                        .to_i64()
+                        .unwrap_or_else(|| unreachable!()) as i32,
+                );
             }
         } else if hms == 1 {
             let (min, sec) = self.parse_min_sec(value);
@@ -1284,7 +1321,12 @@ impl Parser {
 
         let sec_remainder = value - value.floor();
         if sec_remainder != *ZERO {
-            second = Some((*SIXTY * sec_remainder).floor().to_i64().unwrap_or_else(|| unreachable!()) as i32);
+            second = Some(
+                (*SIXTY * sec_remainder)
+                    .floor()
+                    .to_i64()
+                    .unwrap_or_else(|| unreachable!()) as i32,
+            );
         }
 
         (minute, second)

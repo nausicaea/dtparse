@@ -96,9 +96,15 @@ impl Iterator for Tokenizer {
                     seenletters = true;
                     if Tokenizer::isword(nextchar) {
                         // UNWRAP: Because we're in non-empty parse state, we're guaranteed to have a token
-                        token.as_mut().unwrap_or_else(|| unreachable!()).push(nextchar);
+                        token
+                            .as_mut()
+                            .unwrap_or_else(|| unreachable!())
+                            .push(nextchar);
                     } else if nextchar == '.' {
-                        token.as_mut().unwrap_or_else(|| unreachable!()).push(nextchar);
+                        token
+                            .as_mut()
+                            .unwrap_or_else(|| unreachable!())
+                            .push(nextchar);
                         state = ParseState::AlphaDecimal;
                     } else {
                         self.parse_string.push(nextchar);
@@ -108,11 +114,18 @@ impl Iterator for Tokenizer {
                 ParseState::Numeric => {
                     if Tokenizer::isnum(nextchar) {
                         // UNWRAP: Because we're in non-empty parse state, we're guaranteed to have a token
-                        token.as_mut().unwrap_or_else(|| unreachable!()).push(nextchar);
+                        token
+                            .as_mut()
+                            .unwrap_or_else(|| unreachable!())
+                            .push(nextchar);
                     } else if nextchar == '.'
-                        || (nextchar == ',' && token.as_ref().unwrap_or_else(|| unreachable!()).len() >= 2)
+                        || (nextchar == ','
+                            && token.as_ref().unwrap_or_else(|| unreachable!()).len() >= 2)
                     {
-                        token.as_mut().unwrap_or_else(|| unreachable!()).push(nextchar);
+                        token
+                            .as_mut()
+                            .unwrap_or_else(|| unreachable!())
+                            .push(nextchar);
                         state = ParseState::NumericDecimal;
                     } else {
                         self.parse_string.push(nextchar);
@@ -123,9 +136,20 @@ impl Iterator for Tokenizer {
                     seenletters = true;
                     if nextchar == '.' || Tokenizer::isword(nextchar) {
                         // UNWRAP: Because we're in non-empty parse state, we're guaranteed to have a token
-                        token.as_mut().unwrap_or_else(|| unreachable!()).push(nextchar);
-                    } else if Tokenizer::isnum(nextchar) && token.as_ref().unwrap_or_else(|| unreachable!()).ends_with('.') {
-                        token.as_mut().unwrap_or_else(|| unreachable!()).push(nextchar);
+                        token
+                            .as_mut()
+                            .unwrap_or_else(|| unreachable!())
+                            .push(nextchar);
+                    } else if Tokenizer::isnum(nextchar)
+                        && token
+                            .as_ref()
+                            .unwrap_or_else(|| unreachable!())
+                            .ends_with('.')
+                    {
+                        token
+                            .as_mut()
+                            .unwrap_or_else(|| unreachable!())
+                            .push(nextchar);
                         state = ParseState::NumericDecimal;
                     } else {
                         self.parse_string.push(nextchar);
@@ -135,9 +159,20 @@ impl Iterator for Tokenizer {
                 ParseState::NumericDecimal => {
                     if nextchar == '.' || Tokenizer::isnum(nextchar) {
                         // UNWRAP: Because we're in non-empty parse state, we're guaranteed to have a token
-                        token.as_mut().unwrap_or_else(|| unreachable!()).push(nextchar);
-                    } else if Tokenizer::isword(nextchar) && token.as_ref().unwrap_or_else(|| unreachable!()).ends_with('.') {
-                        token.as_mut().unwrap_or_else(|| unreachable!()).push(nextchar);
+                        token
+                            .as_mut()
+                            .unwrap_or_else(|| unreachable!())
+                            .push(nextchar);
+                    } else if Tokenizer::isword(nextchar)
+                        && token
+                            .as_ref()
+                            .unwrap_or_else(|| unreachable!())
+                            .ends_with('.')
+                    {
+                        token
+                            .as_mut()
+                            .unwrap_or_else(|| unreachable!())
+                            .push(nextchar);
                         state = ParseState::AlphaDecimal;
                     } else {
                         self.parse_string.push(nextchar);
@@ -157,11 +192,16 @@ impl Iterator for Tokenizer {
                 .chars()
                 .filter(|c| *c == '.')
                 .count();
-            let last_char = token.as_ref().unwrap_or_else(|| unreachable!()).chars().last();
+            let last_char = token
+                .as_ref()
+                .unwrap_or_else(|| unreachable!())
+                .chars()
+                .last();
             let last_splittable = last_char == Some('.') || last_char == Some(',');
 
             if seenletters || dot_count > 1 || last_splittable {
-                let mut l = Tokenizer::decimal_split(token.as_ref().unwrap_or_else(|| unreachable!()));
+                let mut l =
+                    Tokenizer::decimal_split(token.as_ref().unwrap_or_else(|| unreachable!()));
                 let remaining = l.split_off(1);
 
                 token = Some(l[0].clone());
